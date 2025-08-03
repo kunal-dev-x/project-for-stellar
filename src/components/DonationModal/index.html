@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation Modal - Stellar Funding Platform</title>
+    
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .btn-primary {
+            @apply bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+        }
+        .btn-secondary {
+            @apply bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Add favicon and meta tags for better demo experience -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+    <meta name="description" content="Stellar Funding Platform - Blockchain-powered social innovation funding">
+    
+    <!-- Add startup instructions in console -->
+    <script>
+        console.log(`
+🚀 STELLAR FUNDING PLATFORM - QUICK START
+=========================================
+
+✅ HTML Demo is now running!
+
+📝 TO TEST:
+1. Click "Donate Now" button below
+2. Try different donation amounts
+3. Test all 3 payment methods
+4. Complete the full donation flow
+
+🔧 FOR FULL REACT PROJECT:
+1. Open Command Prompt/Terminal
+2. cd "c:\\Users\\Asus\\Desktop\\project for stellar"
+3. npm install
+4. npm start
+
+💡 Features working:
+- 3-step donation flow
+- Real-time validation
+- Loading states
+- Mobile responsive design
+        `);
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        
+        // Mock campaign data
+        const mockCampaign = {
+            id: 1,
+            title: "Clean Water for Rural Communities",
+            description: "Providing clean water access to underserved communities",
+            category: "Charity",
+            raised: 75000,
+            goal: 100000,
+            beneficiary: "WaterAid Foundation",
+            verified: true,
+            image: "https://via.placeholder.com/300x200",
+            milestones: [
+                { id: 1, title: "Site Assessment", status: "Complete", date: "2024-01-15" },
+                { id: 2, title: "Well Drilling", status: "Under Review", date: "2024-02-01" },
+                { id: 3, title: "Water Testing", status: "Pending", date: "2024-02-15" }
+            ]
+        };
+        
+        // DonationModal Component
+        const DonationModal = ({ campaign, onClose, onDonate }) => {
+            const [step, setStep] = useState(1);
+            const [amount, setAmount] = useState('');
+            const [paymentMethod, setPaymentMethod] = useState('');
+            const [showThankYou, setShowThankYou] = useState(false);
+            const [error, setError] = useState('');
+            const [isProcessing, setIsProcessing] = useState(false);
+            
+            const predefinedAmounts = [25, 50, 100, 250, 500, 1000];
+            const paymentMethods = [
+                { id: 'stellar', name: 'Stellar (XLM)', icon: '💎' },
+                { id: 'crypto', name: 'Other Crypto', icon: '₿' },
+                { id: 'card', name: 'Credit Card', icon: '💳' }
+            ];
+            const transactionFee = Number(amount) * 0.015;
+            
+            const validateAmount = (value) => {
+                const numValue = Number(value);
+                if (isNaN(numValue) || numValue <= 0) {
+                    setError('Please enter a valid amount');
+                    return false;
+                }
+                if (numValue > 10000) {
+                    setError('Maximum donation amount is $10,000');
+                    return false;
+                }
+                setError('');
+                return true;
+            };
+            
+            const handleAmountChange = (e) => {
+                setAmount(e.target.value);
+                validateAmount(e.target.value);
+            };
+            
+            const handleDonate = async () => {
+                try {
+                    setIsProcessing(true);
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+                    onDonate(Number(amount));
+                    setShowThankYou(true);
+                    setTimeout(onClose, 3000);
+                } catch (err) {
+                    setError('Failed to process donation. Please try again.');
+                } finally {
+                    setIsProcessing(false);
+                }
+            };
+            
+            if (showThankYou) {
+                return (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span className="material-icons text-green-600 text-2xl">check_circle</span>
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
+                            <p className="text-gray-600 mb-4">
+                                Your donation of ${amount} has been processed successfully.
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                You'll receive impact updates via email.
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+            
+            return (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Support {campaign.title}</h2>
+                                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+                            
+                            {/* Progress Steps */}
+                            <div className="flex justify-between">
+                                {['Amount', 'Payment', 'Confirm'].map((label, index) => (
+                                    <div key={label} className="flex items-center">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                            step > index + 1 ? 'bg-green-500 text-white' :
+                                            step === index + 1 ? 'bg-blue-500 text-white' :
+                                            'bg-gray-200 text-gray-600'
+                                        }`}>
+                                            {index + 1}
+                                        </div>
+                                        <span className={`ml-2 text-sm ${step === index + 1 ? 'text-blue-600' : 'text-gray-500'}`}>
+                                            {label}
+                                        </span>
+                                        {index < 2 && (
+                                            <div className={`w-16 h-0.5 mx-2 ${
+                                                step > index + 1 ? 'bg-green-500' : 'bg-gray-200'
+                                            }`} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="p-6">
+                            {step === 1 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-semibold">Choose Donation Amount</h3>
+                                    
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {predefinedAmounts.map(preset => (
+                                            <button
+                                                key={preset}
+                                                onClick={() => setAmount(preset.toString())}
+                                                className={`p-3 border rounded-lg font-medium transition-colors ${
+                                                    amount === preset.toString()
+                                                        ? 'border-blue-500 bg-blue-50 text-blue-600'
+                                                        : 'border-gray-300 hover:border-gray-400'
+                                                }`}
+                                            >
+                                                ${preset}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Custom Amount
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                                            <input
+                                                type="number"
+                                                value={amount}
+                                                onChange={handleAmountChange}
+                                                className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                    error ? 'border-red-500' : 'border-gray-300'
+                                                }`}
+                                                placeholder="0"
+                                                min="1"
+                                                max="10000"
+                                            />
+                                        </div>
+                                        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                                    </div>
+                                    
+                                    {amount && (
+                                        <div className="bg-gray-50 rounded-lg p-4">
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span>Campaign Progress</span>
+                                                <span>{Math.round((campaign.raised / campaign.goal) * 100)}%</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                                                <div 
+                                                    className="bg-blue-500 h-2 rounded-full transition-all"
+                                                    style={{ width: `${Math.min((campaign.raised / campaign.goal) * 100, 100)}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-sm text-gray-600">
+                                                Your donation will help reach the goal of ${campaign.goal.toLocaleString()}
+                                            </p>
+                                        </div>
+                                    )}
+                                    
+                                    <button
+                                        onClick={() => setStep(2)}
+                                        disabled={!amount || Number(amount) <= 0 || error}
+                                        className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                                    >
+                                        Continue to Payment
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {step === 2 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-semibold">Select Payment Method</h3>
+                                    
+                                    <div className="space-y-3">
+                                        {paymentMethods.map(method => (
+                                            <label
+                                                key={method.id}
+                                                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                                                    paymentMethod === method.id
+                                                        ? 'border-blue-500 bg-blue-50'
+                                                        : 'border-gray-300 hover:border-gray-400'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="paymentMethod"
+                                                    value={method.id}
+                                                    checked={paymentMethod === method.id}
+                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                    className="sr-only"
+                                                />
+                                                <span className="text-2xl mr-3">{method.icon}</span>
+                                                <span className="font-medium">{method.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="flex space-x-3">
+                                        <button 
+                                            onClick={() => setStep(1)} 
+                                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
+                                        >
+                                            Back
+                                        </button>
+                                        <button
+                                            onClick={() => setStep(3)}
+                                            disabled={!paymentMethod}
+                                            className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                                        >
+                                            Continue
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {step === 3 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-semibold">Confirm Donation</h3>
+                                    
+                                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Donation Amount:</span>
+                                            <span className="font-medium">${Number(amount).toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Transaction Fee (1.5%):</span>
+                                            <span className="font-medium">${transactionFee.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between pt-2 border-t border-gray-200">
+                                            <span className="font-medium">Total:</span>
+                                            <span className="font-bold text-blue-600">
+                                                ${(Number(amount) + transactionFee).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Payment Method:</span>
+                                            <span className="font-medium">
+                                                {paymentMethods.find(m => m.id === paymentMethod)?.name}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                                        <div className="flex items-start">
+                                            <span className="material-icons text-blue-600 mr-2">info</span>
+                                            <p className="text-sm text-blue-700">
+                                                Your donation will be processed securely and you'll receive a confirmation email.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex space-x-3">
+                                        <button 
+                                            onClick={() => setStep(2)} 
+                                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
+                                            disabled={isProcessing}
+                                        >
+                                            Back
+                                        </button>
+                                        <button 
+                                            onClick={handleDonate} 
+                                            disabled={isProcessing}
+                                            className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-3 px-4 rounded-lg transition-colors relative"
+                                        >
+                                            {isProcessing ? (
+                                                <>
+                                                    <span className="opacity-0">Complete Donation</span>
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                'Complete Donation'
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Demo App Component
+        const App = () => {
+            const [showModal, setShowModal] = useState(false);
+            
+            const handleDonate = (amount) => {
+                console.log(`Donation of $${amount} processed!`);
+                alert(`Thank you for your donation of $${amount}!`);
+            };
+            
+            return (
+                <div className="text-center p-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                        Stellar Funding Platform
+                    </h1>
+                    <p className="text-gray-600 mb-8">
+                        Demo: Donation Modal Component
+                    </p>
+                    
+                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto mb-8">
+                        <img
+                            src={mockCampaign.image}
+                            alt={mockCampaign.title}
+                            className="w-full h-40 object-cover rounded-lg mb-4"
+                        />
+                        <h3 className="text-lg font-semibold mb-2">{mockCampaign.title}</h3>
+                        <p className="text-gray-600 text-sm mb-4">{mockCampaign.description}</p>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                            <div 
+                                className="bg-blue-500 h-2 rounded-full"
+                                style={{ width: `${(mockCampaign.raised / mockCampaign.goal) * 100}%` }}
+                            />
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                            ${mockCampaign.raised.toLocaleString()} raised of ${mockCampaign.goal.toLocaleString()} goal
+                        </p>
+                    </div>
+                    
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                    >
+                        💝 Donate Now
+                    </button>
+                    
+                    {showModal && (
+                        <DonationModal
+                            campaign={mockCampaign}
+                            onClose={() => setShowModal(false)}
+                            onDonate={handleDonate}
+                        />
+                    )}
+                </div>
+            );
+        };
+        
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
